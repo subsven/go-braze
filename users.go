@@ -19,14 +19,16 @@ const (
 var (
 	_ UsersEndpoint = (*UsersService)(nil)
 
-	AttributeSubscribeOptedIn      AttributeSubscribe = "opted_in"
-	AttributeSubscribeUnsubscribed AttributeSubscribe = "unsubscribed"
-	AttributeSubscribeSubscribed   AttributeSubscribe = "subscribed"
-	AttributeGenderMale            AttributeGender    = "M"
-	AttributeGenderFemale          AttributeGender    = "F"
-	AttributeGenderOther           AttributeGender    = "O"
-	AttributeGenderNotApplicable   AttributeGender    = "N"
-	AttributeGenderPreferNotToSay  AttributeGender    = "P"
+	AttributeSubscribeOptedIn      AttributeSubscribe     = "opted_in"
+	AttributeSubscribeUnsubscribed AttributeSubscribe     = "unsubscribed"
+	AttributeSubscribeSubscribed   AttributeSubscribe     = "subscribed"
+	AttributeGenderMale            AttributeGender        = "M"
+	AttributeGenderFemale          AttributeGender        = "F"
+	AttributeGenderOther           AttributeGender        = "O"
+	AttributeGenderNotApplicable   AttributeGender        = "N"
+	AttributeGenderPreferNotToSay  AttributeGender        = "P"
+	AttributeMergeBehaviorNone     AttributeMergeBehavior = "none"
+	AttributeMergeBehaviorMerge    AttributeMergeBehavior = "merge"
 )
 
 type UsersEndpoint interface {
@@ -38,8 +40,9 @@ type UsersEndpoint interface {
 }
 
 type (
-	AttributeSubscribe string
-	AttributeGender    string
+	AttributeSubscribe     string
+	AttributeGender        string
+	AttributeMergeBehavior string
 )
 
 type UsersService struct {
@@ -58,7 +61,11 @@ type UsersDeleteRequest struct {
 	BrazeIDs    []string     `json:"braze_ids,omitempty"`
 }
 
-type UsersIdentifyRequest struct{}
+type UsersIdentifyRequest struct {
+	AliasesToIdentify []*UsersAliasesToIdentify `json:"aliases_to_identify,omitempty"`
+	EmailsToIdentify  []*UsersEmailsToIdentify  `json:"emails_to_identify,omitempty"`
+	MergeBehavior     *AttributeMergeBehavior   `json:"merge_behavior,omitempty"`
+}
 
 type UsersCreateAliasRequest struct{}
 
@@ -250,8 +257,37 @@ func (s *UsersService) Delete(ctx context.Context, r *UsersDeleteRequest) (*Resp
 	return &res, nil
 }
 
+type UsersAliasesToIdentify struct {
+	ExternalID *string    `json:"external_id,omitempty"`
+	UserAlias  *UserAlias `json:"user_alias,omitempty"`
+}
+
+type UsersEmailsToIdentify struct {
+	ExternalID     *string                `json:"external_id,omitempty"`
+	Email          *string                `json:"email,omitempty"`
+	Prioritization []*UsersPrioritization `json:"prioritization,omitempty"`
+}
+
+type UsersPrioritization string
+
+var (
+	UsersPrioritizationIdentified          UsersPrioritization = "identified"
+	UsersPrioritizationUnidentified        UsersPrioritization = "unidentified"
+	UsersPrioritizationMostRecentlyUpdated UsersPrioritization = "most_recently_updated"
+)
+
 func (s *UsersService) Identify(ctx context.Context, r *UsersIdentifyRequest) (*Response, error) {
-	panic(errors.New("not implemented"))
+	req, err := s.client.http.newRequest(http.MethodPost, usersIdentifyPath, r)
+	if err != nil {
+		return nil, err
+	}
+
+	var res Response
+	if err := s.client.http.do(ctx, req, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
 }
 
 func (s *UsersService) CreateAlias(ctx context.Context, r *UsersCreateAliasRequest) (*Response, error) {
