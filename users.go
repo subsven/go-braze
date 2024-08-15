@@ -265,7 +265,7 @@ type UsersAliasesToIdentify struct {
 type UsersEmailsToIdentify struct {
 	ExternalID     *string                `json:"external_id,omitempty"`
 	Email          *string                `json:"email,omitempty"`
-	Prioritization []*UsersPrioritization `json:"prioritization,omitempty"`
+	Prioritization *[]UsersPrioritization `json:"prioritization,omitempty"`
 }
 
 type UsersPrioritization string
