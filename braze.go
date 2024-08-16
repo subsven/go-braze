@@ -21,6 +21,7 @@ type Braze interface {
 	Users() UsersEndpoint
 	Messaging() MessagingEndpoint
 	PreferenceCenter() PreferenceCenterEndpoint
+	Subscription() SubscriptionEndPoint
 }
 
 // Client implements Braze REST API client.
@@ -36,6 +37,7 @@ type Client struct {
 	messaging        MessagingEndpoint
 	users            UsersEndpoint
 	preferenceCenter PreferenceCenterEndpoint
+	subscription     SubscriptionEndPoint
 }
 
 type httpClient struct {
@@ -55,6 +57,10 @@ func (c *Client) Messaging() MessagingEndpoint {
 
 func (c *Client) PreferenceCenter() PreferenceCenterEndpoint {
 	return c.preferenceCenter
+}
+
+func (c *Client) Subscription() SubscriptionEndPoint {
+	return c.subscription
 }
 
 // NewClient sets up a new Braze client.
