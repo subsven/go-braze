@@ -93,6 +93,10 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 		client: c,
 	}
 
+	c.subscription = &SubscriptionService{
+		client: c,
+	}
+
 	return c, nil
 }
 
